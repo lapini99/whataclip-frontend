@@ -1,7 +1,12 @@
+"use client";
+
 import Image from "next/image"
 import { FaHome } from "react-icons/fa";
 import { RiVideoUploadFill, RiFolderVideoFill } from "react-icons/ri";
 import { SideBarMenuItem } from "./SidebarMenuItem"
+import { useEffect, useState } from "react";
+import { getUser } from "@/api/userRequests/userApi";
+import type { User } from "@/interfaces/user";
 
 const menuItems = [
     {
@@ -11,20 +16,30 @@ const menuItems = [
         subTitle: "Home Page"
     },
     {
-        path: "/dashboard/counter",
+        path: "/dashboard/storage",
         icon: <RiFolderVideoFill size={25} />,
-        title: "Counter",
+        title: "Storage",
         subTitle: "Contador Client Side"
     },
     {
-        path: "/dashboard/pokemons",
+        path: "/dashboard/upload",
         icon: <RiVideoUploadFill size={25} />,
-        title: "Pokemons",
+        title: "Upload",
         subTitle: ""
     },
 ]
 
 export const Sidebar = () => {
+    const [userData, setUserData] = useState<User | null>(null);
+
+    useEffect(() => {
+        getUser("lapini").then(response => {
+            setUserData(response.data);
+        }).catch(error => {
+            console.error("Error fetching user:", error);
+        });
+    }, []);
+
     return (
         <div id="menu"
             className="bg-gray-900 min-h-screen z-10 text-slate-300 w-64 fixed left-0 overflow-y-scroll">
@@ -45,7 +60,7 @@ export const Sidebar = () => {
                                 />
                     </span>
                     <span className="text-sm md:text-base font-bold">
-                        Username
+                        {userData ? userData?.username : "Loading..."}
                     </span>
                 </a>
             </div>
