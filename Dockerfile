@@ -1,17 +1,17 @@
 # frontend/Dockerfile
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
 COPY . .
 
-RUN npm ci
-RUN npm run build
-
-# --- producción ---
-FROM node:20-alpine
-WORKDIR /app
-
-COPY --from=builder /app ./
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]
