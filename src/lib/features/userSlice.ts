@@ -2,10 +2,11 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { Family } from '@/interfaces/user';
 
 const initialUserState = {
-    name: '',
-    email: '',
-    avatar: '',
-    role: '',
+    name: "",
+    email: "",
+    avatar: "",
+    role: "",
+    biography: "",
     families: [] as Family[],
 }
 

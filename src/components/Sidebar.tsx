@@ -53,7 +53,7 @@ export const Sidebar = () => {
 
     return (
         <div id="menu"
-            className="bg-white min-h-screen z-10 text-orange-500 w-64 fixed left-0 overflow-y-scroll">
+            className="bg-white min-h-screen z-10 text-orange-500 w-64 fixed left-0 shadow-lg overflow-y-auto">
             <div id="logo" className="my-4 px-6">
                 <h1 className="flex items-center text-lg md:text-2xl font-bold text-black">
                     {/* <IoLogoReact className="mr-2"/> */}
