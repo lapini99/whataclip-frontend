@@ -12,8 +12,9 @@ interface RangeInputProps {
   rStart: number;
   handleUpdaterStart: (event: FormEvent<HTMLInputElement>) => void;
   handleUpdaterEnd: (event: FormEvent<HTMLInputElement>) => void;
+  onRangeComplete?: () => void;
   loading: boolean;
-  control: ReactNode;
+  control?: ReactNode;
   videoMeta: VideoMeta;
 }
 
@@ -23,6 +24,7 @@ export default function RangeInput({
   rStart,
   handleUpdaterStart,
   handleUpdaterEnd,
+  onRangeComplete,
   loading,
   control,
   videoMeta,
@@ -57,7 +59,6 @@ export default function RangeInput({
               style={{ 
                 width: '100%', 
                 height: '60px', 
-                backgroundColor: '#f0f0f0', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
@@ -65,7 +66,6 @@ export default function RangeInput({
                 fontSize: '14px'
               }}
             >
-              Video preview will appear here
             </div>
           )}
           <div
@@ -92,6 +92,8 @@ export default function RangeInput({
             min={0}
             max={RANGE_MAX}
             onInput={handleUpdaterStart}
+            onMouseUp={onRangeComplete}
+            onMouseLeave={onRangeComplete}
             value={rStart}
           />
           <input
@@ -100,11 +102,13 @@ export default function RangeInput({
             min={0}
             max={RANGE_MAX}
             onInput={handleUpdaterEnd}
+            onMouseUp={onRangeComplete}
+            onMouseLeave={onRangeComplete}
             value={rEnd}
           />
         </div>
       </div>
-      {control}
+      {control && control}
     </>
   );
 }

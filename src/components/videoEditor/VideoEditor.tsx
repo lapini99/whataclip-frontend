@@ -45,7 +45,7 @@ export default function VideoEditor(): React.JSX.Element {
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     console.log(file);
     setInputVideoFile(file);
     const base64URL = await helpers.readFileAsBase64(file);
@@ -55,7 +55,7 @@ export default function VideoEditor(): React.JSX.Element {
   const handleLoadedData = async (e: React.SyntheticEvent<HTMLVideoElement>): Promise<void> => {
     const el = e.target as HTMLVideoElement;
     if (!inputVideoFile) return;
-    
+
     const meta: VideoMeta = {
       name: inputVideoFile.name,
       duration: el.duration,
@@ -75,9 +75,19 @@ export default function VideoEditor(): React.JSX.Element {
     };
   };
 
+  const handleRangeTrigger = async (): Promise<void> => {
+    // Trigger trim when user stops interacting with range
+    if (videoMeta && inputVideoFile && !trimIsProcessing) {
+      // Use a small delay to allow the state to update
+      setTimeout(() => {
+        handleTrim();
+      }, 100);
+    }
+  };
+
   const handleTrim = async (): Promise<void> => {
-    if (!videoMeta || !inputVideoFile) return;
-    
+    if (!videoMeta || !inputVideoFile || trimIsProcessing) return;
+
     setTrimIsProcessing(true);
     const startTime = ((rStart / 100) * videoMeta.duration).toFixed(2);
     const offset = ((rEnd / 100) * videoMeta.duration - Number(startTime)).toFixed(2);
@@ -86,7 +96,7 @@ export default function VideoEditor(): React.JSX.Element {
       if (!ffmpeg.loaded) {
         await ffmpeg.load();
       }
-      
+
       await ffmpeg.writeFile(inputVideoFile.name, await fetchFile(inputVideoFile));
       await ffmpeg.exec([
         "-ss",
@@ -114,61 +124,51 @@ export default function VideoEditor(): React.JSX.Element {
 
   return (
     <main className="videoeditor">
-      {videoMeta && (
-        <>
-          <RangeInput
-            rEnd={rEnd}
-            rStart={rStart}
-            handleUpdaterStart={handleUpdateRange(setRstart)}
-            handleUpdaterEnd={handleUpdateRange(setRend)}
-            loading={thumbnailIsProcessing}
-            videoMeta={videoMeta}
-            control={
-              <div className="u-center">
-                <button
-                  onClick={handleTrim}
-                  className="btn btn_b"
-                  disabled={trimIsProcessing}
-                >
-                  {trimIsProcessing ? "trimming..." : "trim selected"}
-                </button>
-              </div>
-            }
-            thumbNails={thumbnails}
-          />
-        </>
-      )}
-      <div className="u-center">
-        <button
-          onClick={handleTrim}
-          className="btn btn_b"
-          disabled={trimIsProcessing}
-        >
-          {trimIsProcessing ? "trimming..." : "trim selected"}
-        </button>
-      </div>
       <section className="deck">
-        <article className="grid_txt_2">
-          <VideoFilePicker
-            handleChange={handleChange}
-            showVideo={!!inputVideoFile}
-          >
-            <div className="bord_g_2 p_2">
-              <video
-                src={inputVideoFile && URL ? URL : undefined}
-                autoPlay
-                controls
-                muted
-                onLoadedMetadata={handleLoadedData}
-                width="450"
-              ></video>
+        {!trimmedVideoFile ? (
+          <article className="grid_txt_2">
+            {!inputVideoFile ? (
+              <VideoFilePicker
+                handleChange={handleChange}
+                showVideo={!!inputVideoFile}
+              />
+            ) : (
+              <div className="bord_g_2 p_2">
+                <video
+                  src={inputVideoFile && URL ? URL : undefined}
+                  autoPlay
+                  controls
+                  muted
+                  onLoadedMetadata={handleLoadedData}
+                  width="450"
+                ></video>
+              </div>
+            )}
+          </article>
+        ) : (
+          <OutputVideo
+            videoSrc={trimmedVideoFile}
+            handleUpload={() => trimmedVideoFile && helpers.download(trimmedVideoFile)}
+          />
+        )}
+        {videoMeta && (
+          <>
+            <RangeInput
+              rEnd={rEnd}
+              rStart={rStart}
+              handleUpdaterStart={handleUpdateRange(setRstart)}
+              handleUpdaterEnd={handleUpdateRange(setRend)}
+              onRangeComplete={handleRangeTrigger}
+              loading={thumbnailIsProcessing}
+              videoMeta={videoMeta}
+              thumbNails={thumbnails}
+            />
+            <div className="flex row align-center justify-center gap-4">
+              <button className="btn bg-gray-200">Discard</button>
+              <button className="btn animated-upload-button">Upload</button>
             </div>
-          </VideoFilePicker>
-        </article>
-        <OutputVideo
-          videoSrc={trimmedVideoFile}
-          handleDownload={() => trimmedVideoFile && helpers.download(trimmedVideoFile)}
-        />
+          </>
+        )}
       </section>
     </main>
   );
