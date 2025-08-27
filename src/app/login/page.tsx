@@ -1,7 +1,32 @@
+"use client";
+
+import { login } from '@/api/userRequests/userApi';
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 
-export default function page() {
+export default function Login() {
+  const router = useRouter();
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    login(email, password).then(response => {
+      if (response.status === 200) {
+        router.push("/dashboard/main");
+      } else {
+        alert("Login failed. Please check your credentials.");
+      }
+    }).catch(error => {
+      console.error("Login error:", error);
+      alert("An error occurred during login. Please try again.");
+    });
+  }
+  
   return (
     <>
       <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -19,7 +44,7 @@ export default function page() {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form action="#" method="POST" className="space-y-6">
+          <form action="#" method="POST" className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
                 Email address
