@@ -164,7 +164,7 @@ export default function VideoEditor(): React.JSX.Element {
               thumbNails={thumbnails}
             />
             <div className="flex row align-center justify-center gap-4">
-              <button className="btn bg-gray-200">Discard</button>
+              <button className="btn bg-gray-200" onClick={() => setTrimmedVideoFile(null)}>Discard</button>
               <button className="btn animated-upload-button">Upload</button>
             </div>
           </>

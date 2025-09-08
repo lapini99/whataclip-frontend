@@ -15,16 +15,37 @@ export default function Login() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    login(email, password).then(response => {
-      if (response.status === 200) {
-        router.push("/dashboard/main");
-      } else {
-        alert("Login failed. Please check your credentials.");
-      }
-    }).catch(error => {
-      console.error("Login error:", error);
-      alert("An error occurred during login. Please try again.");
-    });
+    console.log("Attempting login with:", { email, password });
+
+    try {
+        const response = await login(email, password);
+        console.log("Login response:", response);
+        
+        if (response.status === 200) {
+            // Store JWT token in localStorage
+            localStorage.setItem('jwt_token', response.data.token);
+            localStorage.setItem('user_id', response.data.user_id);
+            router.push("/dashboard/main");
+        }
+    } catch (error: unknown) {
+        console.error("Login error:", error);
+        
+        if (error && typeof error === 'object' && 'response' in error) {
+            const axiosError = error as { response?: { data?: unknown; status?: number } };
+            console.error("Error response:", axiosError.response?.data);
+            console.error("Error status:", axiosError.response?.status);
+            
+            if (axiosError.response?.status === 401) {
+                alert("Invalid email or password. Please check your credentials.");
+            } else if (axiosError.response?.status === 422) {
+                alert("Invalid request format. Please try again.");
+            } else {
+                alert("Login failed. Please try again later.");
+            }
+        } else {
+            alert("Login failed. Please try again later.");
+        }
+    }
   }
   
   return (
@@ -44,7 +65,7 @@ export default function Login() {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form action="#" method="POST" className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
                 Email address
